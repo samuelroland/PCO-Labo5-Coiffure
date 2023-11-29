@@ -18,7 +18,7 @@
 #include "salon.h"
 #include "utils/graphicsaloninterface.h"
 
-class PcoSalon : public Salon, PcoHoareMonitor
+class PcoSalon : public Salon
 {
 public:
     PcoSalon(GraphicSalonInterface *interface, unsigned int capacity);
