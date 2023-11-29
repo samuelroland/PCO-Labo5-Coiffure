@@ -13,8 +13,7 @@
 #include "salonbarberinterface.h"
 #include "salonclientinterface.h"
 
-class Salon : public SalonBarberInterface, public SalonClientInterface
-{
+class Salon : public SalonBarberInterface, public SalonClientInterface {
 public:
     /*!
      * \brief endService Permet au barbier de fermer le salon
@@ -22,4 +21,4 @@ public:
     virtual void endService() = 0;
 };
 
-#endif // SALON_H
+#endif// SALON_H

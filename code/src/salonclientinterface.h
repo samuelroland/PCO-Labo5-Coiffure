@@ -11,8 +11,7 @@
 #define SALONCLIENTINTERFACE_H
 
 
-class SalonClientInterface
-{
+class SalonClientInterface {
 public:
     /*!
      * \brief accessSalon Permet au client de savoir si le salon est plein
@@ -49,4 +48,4 @@ public:
     virtual void goHome(unsigned clientId) = 0;
 };
 
-#endif // SALONCLIENTINTERFACE_H
+#endif// SALONCLIENTINTERFACE_H

@@ -16,13 +16,11 @@ int Client::_nextId = 0;
 
 Client::Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInterface> salon)
 
-    : _interface(interface), _salon(salon),  _clientId(_nextId++)
-{
+    : _interface(interface), _salon(salon), _clientId(_nextId++) {
     _interface->consoleAppendTextClient(_clientId, "Salut, prêt pour une coupe !");
 }
 
-void Client::run()
-{
+void Client::run() {
     // TODO
     _interface->consoleAppendTextClient(_clientId, "Le salon est fermé... Zut !");
 }

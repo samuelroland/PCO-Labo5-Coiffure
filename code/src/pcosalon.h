@@ -18,8 +18,7 @@
 #include "salon.h"
 #include "utils/graphicsaloninterface.h"
 
-class PcoSalon : public Salon
-{
+class PcoSalon : public Salon {
 public:
     PcoSalon(GraphicSalonInterface *interface, unsigned int capacity);
 
@@ -167,8 +166,8 @@ protected:
     GraphicSalonInterface *_interface;
 
     PcoMutex _mutex;
-    
+
     // TODO
 };
 
-#endif // PCOSALON_H
+#endif// PCOSALON_H

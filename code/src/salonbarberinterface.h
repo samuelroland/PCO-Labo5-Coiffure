@@ -11,8 +11,7 @@
 #define SALONBARBERINTERFACE_H
 
 
-class SalonBarberInterface
-{
+class SalonBarberInterface {
 public:
     /*!
      * \brief getNbClient Permet de savoir le nombre de clients qui attendent
@@ -49,4 +48,4 @@ public:
     virtual bool isInService() = 0;
 };
 
-#endif // SALONBARBERINTERFACE_H
+#endif// SALONBARBERINTERFACE_H

@@ -10,12 +10,11 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "utils/launchable.h"
-#include "utils/graphicsaloninterface.h"
 #include "salon.h"
+#include "utils/graphicsaloninterface.h"
+#include "utils/launchable.h"
 
-class Client : public Launchable
-{
+class Client : public Launchable {
 public:
     Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInterface> salon);
 
@@ -27,12 +26,12 @@ public:
     /*!
      * \brief Message affiché lors du démarrage du thread
      */
-    void printStartMessage() override {qDebug() << "[START] Thread du client" << _clientId << "lancé";}
+    void printStartMessage() override { qDebug() << "[START] Thread du client" << _clientId << "lancé"; }
 
     /*!
      * \brief Message affiché lorsque le thread a terminé
      */
-    void printCompletionMessage() override {qDebug() << "[STOP] Thread du client" << _clientId << "a terminé";}
+    void printCompletionMessage() override { qDebug() << "[STOP] Thread du client" << _clientId << "a terminé"; }
 
 private:
     GraphicSalonInterface *_interface;
@@ -41,7 +40,7 @@ private:
     /*!
      * \brief L'identificateur du Client
      */
-     int _clientId;
+    int _clientId;
 
     /*!
      * \brief L'identificateur pour le prochain Client créé
@@ -49,4 +48,4 @@ private:
     static int _nextId;
 };
 
-#endif // CLIENT_H
+#endif// CLIENT_H

@@ -13,8 +13,7 @@
 #include "utils/graphicsaloninterface.h"
 #include "utils/launchable.h"
 
-class Application : public Launchable
-{
+class Application : public Launchable {
 public:
     Application(GraphicSalonInterface *interface, unsigned nbPlaces, unsigned nbClients);
 
@@ -26,12 +25,12 @@ public:
     /*!
      * \brief Message affiché lors du démarrage du thread
      */
-    void printStartMessage() override {qDebug() << "[START] Application lancée";}
+    void printStartMessage() override { qDebug() << "[START] Application lancée"; }
 
     /*!
      * \brief Message affiché lorsque le thread a terminé
      */
-    void printCompletionMessage() override {qDebug() << "[STOP] L'application est terminé";}
+    void printCompletionMessage() override { qDebug() << "[STOP] L'application est terminé"; }
 
 private:
     GraphicSalonInterface *_interface;
@@ -39,4 +38,4 @@ private:
     unsigned _nbClients;
 };
 
-#endif // APPLICATION_H
+#endif// APPLICATION_H

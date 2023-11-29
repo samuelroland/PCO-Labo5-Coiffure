@@ -11,15 +11,14 @@
 #include <QApplication>
 #include <pcosynchro/pcologger.h>
 
-#include "utils/mainwindow.h"
 #include "application.h"
 #include "utils/graphicsaloninterface.h"
+#include "utils/mainwindow.h"
 
 constexpr unsigned int NB_CLIENTS = 10;
 constexpr unsigned int NB_SIEGES = 2;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
     logger().setVerbosity(1);

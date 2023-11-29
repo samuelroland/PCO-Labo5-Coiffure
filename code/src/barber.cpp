@@ -13,13 +13,11 @@
 #include <iostream>
 
 Barber::Barber(GraphicSalonInterface *interface, std::shared_ptr<SalonBarberInterface> salon)
-    : _interface(interface), _salon(salon)
-{
+    : _interface(interface), _salon(salon) {
     _interface->consoleAppendTextBarber("Salut, prêt à travailler !");
 }
 
-void Barber::run()
-{
+void Barber::run() {
     // TODO
     _interface->consoleAppendTextBarber("La journée est terminée, à demain !");
 }

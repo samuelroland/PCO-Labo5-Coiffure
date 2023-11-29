@@ -10,12 +10,11 @@
 #ifndef BARBER_H
 #define BARBER_H
 
-#include "utils/launchable.h"
-#include "utils/graphicsaloninterface.h"
 #include "salon.h"
+#include "utils/graphicsaloninterface.h"
+#include "utils/launchable.h"
 
-class Barber : public Launchable
-{
+class Barber : public Launchable {
 public:
     Barber(GraphicSalonInterface *interface, std::shared_ptr<SalonBarberInterface> salon);
 
@@ -27,17 +26,16 @@ public:
     /*!
      * \brief Message affiché au lancement du thread
      */
-    void printStartMessage() override {qDebug() << "[START] Thread du barbier lancé";}
+    void printStartMessage() override { qDebug() << "[START] Thread du barbier lancé"; }
 
     /*!
      * \brief Message affiché après la fin du thread
      */
-    void printCompletionMessage() override {qDebug() << "[STOP] Thread du barbier a terminé";}
+    void printCompletionMessage() override { qDebug() << "[STOP] Thread du barbier a terminé"; }
 
 private:
     GraphicSalonInterface *_interface;
     std::shared_ptr<SalonBarberInterface> _salon;
-
 };
 
-#endif // BARBER_H
+#endif// BARBER_H

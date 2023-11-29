@@ -16,11 +16,9 @@
 #include "pcosalon.h"
 
 Application::Application(GraphicSalonInterface *interface, unsigned nbPlaces, unsigned nbClients)
-    : _interface(interface), _nbPlaces(nbPlaces), _nbClients(nbClients)
-{}
+    : _interface(interface), _nbPlaces(nbPlaces), _nbClients(nbClients) {}
 
-void Application::run()
-{
+void Application::run() {
     std::vector<std::unique_ptr<Launchable>> threads(0);
 
     // Création du salon
@@ -39,7 +37,7 @@ void Application::run()
     std::random_shuffle(std::begin(threads), std::end(threads));
 
     // Démarrage des threads
-    for (auto& thread : threads) {
+    for (auto &thread: threads) {
         thread->startThread();
     }
 
@@ -51,7 +49,7 @@ void Application::run()
     salon->endService();
 
     // Attendre la fin des threads clients
-    for (auto& thread : threads) {
+    for (auto &thread: threads) {
         thread->join();
     }
 
