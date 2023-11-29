@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(PCO_Barbier)
+project(pco_barbier)
 
 set(CMAKE_CXX_STANDARD 17)
 
