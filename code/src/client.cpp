@@ -21,6 +21,13 @@ Client::Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInte
 }
 
 void Client::run() {
-    // TODO
+    while (true) {
+        if (_salon->accessSalon(_clientId)) {
+            _salon->goForHairCut(_clientId);
+            _salon->waitingForHairToGrow(_clientId);
+        } else {
+            _salon->walkAround(_clientId);
+        }
+    }
     _interface->consoleAppendTextClient(_clientId, "Le salon est fermé... Zut !");
 }
