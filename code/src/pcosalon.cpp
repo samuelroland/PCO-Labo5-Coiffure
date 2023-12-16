@@ -51,12 +51,12 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         auto &chairToUse = chairs.at(freeChairIndex);
         freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
-        nbWaitingClients--;
+        nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
         barberAwake = true;
         barberSleeping.notifyOne();
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
-        //On n'incrémente pas nbWaitingClients car le client n'attends pas, 2 autres clients peuvent rentrer
+        //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
         nbWaitingClients--;
         _interface->consoleAppendTextClient(clientId, QString("Je vais directement sur la working chair"));
     }
@@ -72,6 +72,8 @@ void PcoSalon::goForHairCut(unsigned clientId) {
     workChairFree = false;
     barberWaiting.notifyOne();
     clientCutWaiting.wait(&_mutex);
+    workChairFree = true;
+    //Quitter le salon
     _mutex.unlock();
 }
 
@@ -131,8 +133,12 @@ void PcoSalon::pickNextClient() {
 void PcoSalon::waitClientAtChair() {
     _mutex.lock();
     _interface->consoleAppendTextBarber("waitClientAtChair()");
-    //TODO: should we check workChairFree ?
-    barberWaiting.wait(&_mutex);
+    //TODO: besoin d'un while ou pas ? comme c'est un pattern régulier avec les moniteurs de Mesa.
+    //Si le client n'est pas déjà arrivé sur la working char alors on l'attend
+    //Il ne faut surtout pas l'attendre s'il est allé très vite et arrive avant le barbier sinon le barbier sera bloqué indéfiniment
+    if (workChairFree) {
+        barberWaiting.wait(&_mutex);
+    }
     _mutex.unlock();
 }
 
@@ -142,7 +148,7 @@ void PcoSalon::beautifyClient() {
     _mutex.lock();
     _interface->consoleAppendTextBarber("beautifyClient()");
     animationBarberCuttingHair();
-    clientCutWaiting.notifyOne();
+    clientCutWaiting.notifyOne();//notifier le client sur la working chair qu'on a terminé la coupe
     _mutex.unlock();
 }
 
