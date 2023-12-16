@@ -19,7 +19,7 @@
 
 PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
     : _interface(interface), capacity(capacity) {
-    //Init chairs with pointers on PcoConditionVariable objects
+    //Initialiser les chaises en tant que liste de PcoConditionVariable, chacune servant à faire attendre ou libérer une client
     chairs.reserve(capacity);
     for (unsigned i = 0; i < capacity; i++) {
         chairs.push_back(std::make_unique<PcoConditionVariable>());
@@ -30,35 +30,37 @@ PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    return nbWaitingClients;
+    return nbUnmanagedClients;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
     _mutex.lock();
-    // _interface->consoleAppendTextClient(clientId, "Tentons d'entrer dans le salon...");
-    if (nbWaitingClients >= capacity) {
+    _interface->consoleAppendTextClient(clientId, "Tentons d'entrer dans le salon...");
+    //Bloquer l'entrée au salon s'il est fermé ou qu'il n'y a pas assez de place en salle d'attente
+    if (!isOpen || nbWaitingClients >= capacity) {
         _mutex.unlock();
-        // _interface->consoleAppendTextClient(clientId, "Trop de monde...");
+        _interface->consoleAppendTextClient(clientId, "Pas possible de rentrer...");
         return false;
     }
 
     auto clientNumero = ++nbWaitingClients;
+    nbUnmanagedClients++;
     animationClientAccessEntrance(clientId);
 
     if (barberAwake) {
-        _interface->consoleAppendTextClient(clientId, QString("Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
+        _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
         animationClientSitOnChair(clientId, freeChairIndex);
         auto &chairToUse = chairs.at(freeChairIndex);
         freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
         nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
+        _interface->consoleAppendTextClient(clientId, QString("Barbier endormi: Je le réveille et vais directement sur la working chair"));
         barberAwake = true;
         barberSleeping.notifyOne();
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
         //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
         nbWaitingClients--;
-        _interface->consoleAppendTextClient(clientId, QString("Je vais directement sur la working chair"));
     }
 
     _mutex.unlock();
@@ -69,10 +71,13 @@ bool PcoSalon::accessSalon(unsigned clientId) {
 void PcoSalon::goForHairCut(unsigned clientId) {
     _mutex.lock();
     animationClientSitOnWorkChair(clientId);
+    _interface->consoleAppendTextClient(clientId, "Arrivé sur la working chair");
     workChairFree = false;
     barberWaiting.notifyOne();
     clientCutWaiting.wait(&_mutex);
     workChairFree = true;
+    _interface->consoleAppendTextClient(clientId, "La coupe est terminée");
+    nbUnmanagedClients--;
     //Quitter le salon
     _mutex.unlock();
 }
@@ -96,7 +101,9 @@ void PcoSalon::walkAround(unsigned clientId) {
 void PcoSalon::goHome(unsigned clientId) {
     // TODO
     _mutex.lock();
+    _interface->consoleAppendTextClient(clientId, QString("Je vais à la maison"));
     animationClientGoHome(clientId);
+    _interface->consoleAppendTextClient(clientId, QString("Je suis arrivé à la maison"));
     _mutex.unlock();
 }
 
@@ -107,13 +114,21 @@ void PcoSalon::goHome(unsigned clientId) {
 void PcoSalon::goToSleep() {
     // TODO
     _mutex.lock();
-    _interface->consoleAppendTextBarber("goToSleep()");
+    _interface->consoleAppendTextBarber("Je vais au lit");
     barberAwake = false;
     animationBarberGoToSleep();
+    _interface->consoleAppendTextBarber("Je m'endors");
     barberSleeping.wait(&_mutex);
-    animationWakeUpBarber();
-    //Le barbier est réveillé par le premier client qui entre
-    //et qui voit qu'il dort. barberAwake est déjà true.
+    _interface->consoleAppendTextBarber("Je me réveille");
+
+    //Animer le réveil du barbier seulement si le salon ne doit pas fermer
+    if (isInService() || nbUnmanagedClients > 0) {
+        _interface->consoleAppendTextBarber("Je me déplace vers la chaise");
+        animationWakeUpBarber();
+
+        //Le barbier est réveillé par le premier client qui entre
+        //et qui voit qu'il dort. barberAwake est déjà true.
+    }
     _mutex.unlock();
 }
 
@@ -121,7 +136,7 @@ void PcoSalon::goToSleep() {
 void PcoSalon::pickNextClient() {
     // TODO
     _mutex.lock();
-    _interface->consoleAppendTextBarber("pickNextClient()");
+    _interface->consoleAppendTextBarber("Prenons le client suivant");
 
     //TODO: should we check workChairFree ?
     chairs.at(nextClientChairIndex)->notifyOne();
@@ -132,7 +147,7 @@ void PcoSalon::pickNextClient() {
 
 void PcoSalon::waitClientAtChair() {
     _mutex.lock();
-    _interface->consoleAppendTextBarber("waitClientAtChair()");
+    _interface->consoleAppendTextBarber("Attendons le client appelé");
     //TODO: besoin d'un while ou pas ? comme c'est un pattern régulier avec les moniteurs de Mesa.
     //Si le client n'est pas déjà arrivé sur la working char alors on l'attend
     //Il ne faut surtout pas l'attendre s'il est allé très vite et arrive avant le barbier sinon le barbier sera bloqué indéfiniment
@@ -146,9 +161,10 @@ void PcoSalon::waitClientAtChair() {
 void PcoSalon::beautifyClient() {
     // TODO
     _mutex.lock();
-    _interface->consoleAppendTextBarber("beautifyClient()");
+    _interface->consoleAppendTextBarber("Faisons lui une belle coupe.");
     animationBarberCuttingHair();
     clientCutWaiting.notifyOne();//notifier le client sur la working chair qu'on a terminé la coupe
+    _interface->consoleAppendTextBarber("Coupe terminée");
     _mutex.unlock();
 }
 
@@ -156,14 +172,19 @@ void PcoSalon::beautifyClient() {
  *    Méthodes générales de l'interface     *
  *******************************************/
 bool PcoSalon::isInService() {
-    // TODO
-    return true;
+    return isOpen;
 }
 
 
 void PcoSalon::endService() {
     // TODO
     _mutex.lock();
+    isOpen = false;
+    _interface->consoleAppendTextBarber("Le salon est fermé, c'est la fin de service.");
+    //Si le barbier dort, il faut le réveiller pour que son thread puisse se terminer
+    if (!barberAwake) {
+        barberSleeping.notifyOne();
+    }
     _mutex.unlock();
 }
 

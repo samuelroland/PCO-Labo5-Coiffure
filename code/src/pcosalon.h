@@ -173,12 +173,15 @@ protected:
     unsigned freeChairIndex = 0;      //index de la prochaine chaise disponible pour un client arrivant
     unsigned nextClientChairIndex = 0;//index de la chaise avec le prochain client à gérer
     unsigned nbWaitingClients = 0;    //nombre de clients entrés dans le salon
+    unsigned nbUnmanagedClients = 0;	//nombre de clients encore non gérés
 
     bool barberAwake = true;
     bool workChairFree = true;
     PcoConditionVariable barberWaiting;   //le barbier en attente que le client arrive sur la working chair
     PcoConditionVariable barberSleeping;  //le barbier dort
     PcoConditionVariable clientCutWaiting;//le client sur la working chair attend de s'être fait coupé les cheveux
+
+    bool isOpen = true;//whether the salon is open (if the salon is close, clients already inside have to be managed before leaving the salon)
 };
 
 #endif// PCOSALON_H

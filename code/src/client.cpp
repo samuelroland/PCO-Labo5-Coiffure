@@ -31,4 +31,5 @@ void Client::run() {
     }
     _interface->consoleAppendTextClient(_clientId, "Le salon est fermé... Zut !");
     _salon->goHome(_clientId);
+    _interface->consoleAppendTextClient(_clientId, "Je disparais...");
 }
