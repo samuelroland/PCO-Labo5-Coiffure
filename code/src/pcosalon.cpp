@@ -30,7 +30,7 @@ PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    return nbUnmanagedClients;
+    return nbWaitingClients;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
@@ -50,12 +50,14 @@ bool PcoSalon::accessSalon(unsigned clientId) {
     if (barberAwake) {
         _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
         animationClientSitOnChair(clientId, freeChairIndex);
+
         auto &chairToUse = chairs.at(freeChairIndex);
         freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
         nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
         _interface->consoleAppendTextClient(clientId, QString("Barbier endormi: Je le réveille et vais directement sur la working chair"));
+
         barberAwake = true;
         barberSleeping.notifyOne();
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
@@ -139,8 +141,11 @@ void PcoSalon::pickNextClient() {
     _interface->consoleAppendTextBarber("Prenons le client suivant");
 
     //TODO: should we check workChairFree ?
-    chairs.at(nextClientChairIndex)->notifyOne();
-    nextClientChairIndex = (nextClientChairIndex + 1) % capacity;
+    if (workChairFree) {
+        _interface->consoleAppendTextBarber(QString("Appeler le client en chaise %1").arg(nextClientChairIndex));
+        chairs.at(nextClientChairIndex)->notifyOne();
+        nextClientChairIndex = (nextClientChairIndex + 1) % capacity;
+    }
     _mutex.unlock();
 }
 
