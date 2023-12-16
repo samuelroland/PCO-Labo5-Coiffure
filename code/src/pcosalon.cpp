@@ -52,8 +52,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         freeChairIndex = freeChairIndex + 1 % capacity;
         chairToUse->wait(&_mutex);
     } else {
-        animationWakeUpBarber();
-        barberAwake = true;
+        barberSleeping.notifyOne();
     }
 
     _mutex.unlock();
@@ -65,6 +64,8 @@ void PcoSalon::goForHairCut(unsigned clientId) {
     _mutex.lock();
     animationClientSitOnWorkChair(clientId);
     workChairFree = false;
+    barberWaiting.notifyOne();
+    clientCutWaiting.wait(&_mutex);
     _mutex.unlock();
 }
 
@@ -87,6 +88,8 @@ void PcoSalon::walkAround(unsigned clientId) {
 void PcoSalon::goHome(unsigned clientId) {
     // TODO
     _mutex.lock();
+    nbClients--;
+    animationClientGoHome(clientId);
     _mutex.unlock();
 }
 
@@ -97,6 +100,12 @@ void PcoSalon::goHome(unsigned clientId) {
 void PcoSalon::goToSleep() {
     // TODO
     _mutex.lock();
+    _interface->consoleAppendTextBarber("goToSleep()");
+    barberAwake = false;
+    animationBarberGoToSleep();
+    barberSleeping.wait(&_mutex);
+    animationWakeUpBarber();
+    barberAwake = true;
     _mutex.unlock();
 }
 
@@ -104,15 +113,20 @@ void PcoSalon::goToSleep() {
 void PcoSalon::pickNextClient() {
     // TODO
     _mutex.lock();
-    // chairs.at(nextClientChairIndex)->notifyOne();
+    _interface->consoleAppendTextBarber("pickNextClient()");
+
+    //TODO: should we check workChairFree ?
+    chairs.at(nextClientChairIndex)->notifyOne();
     nextClientChairIndex = nextClientChairIndex + 1 % capacity;
     _mutex.unlock();
 }
 
 
 void PcoSalon::waitClientAtChair() {
-    // TODO
     _mutex.lock();
+    _interface->consoleAppendTextBarber("waitClientAtChair()");
+    //TODO: should we check workChairFree ?
+    barberWaiting.wait(&_mutex);
     _mutex.unlock();
 }
 
@@ -120,6 +134,9 @@ void PcoSalon::waitClientAtChair() {
 void PcoSalon::beautifyClient() {
     // TODO
     _mutex.lock();
+    _interface->consoleAppendTextBarber("beautifyClient()");
+    animationBarberCuttingHair();
+    clientCutWaiting.notifyOne();
     _mutex.unlock();
 }
 

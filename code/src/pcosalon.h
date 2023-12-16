@@ -172,11 +172,13 @@ protected:
     std::vector<std::unique_ptr<PcoConditionVariable>> chairs;
     unsigned freeChairIndex = 0;      //index de la prochaine chaise disponible pour un client arrivant
     unsigned nextClientChairIndex = 0;//index de la chaise avec le prochain client à gérer
-    unsigned nbClients = 0;
+    unsigned nbClients = 0;           //nombre de clients entrés dans le salon
 
     bool barberAwake = true;
     bool workChairFree = true;
-    PcoConditionVariable waitBarber;//les clients attendent que le barbier soit dispo
+    PcoConditionVariable barberWaiting;   //le barbier en attente que le client arrive sur la working chair
+    PcoConditionVariable barberSleeping;  //le barbier dort
+    PcoConditionVariable clientCutWaiting;//le client sur la working chair attend de s'être fait coupé les cheveux
 };
 
 #endif// PCOSALON_H

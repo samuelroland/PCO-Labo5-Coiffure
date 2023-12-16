@@ -26,6 +26,7 @@ void Barber::run() {
         }
         _salon->waitClientAtChair();
         _salon->beautifyClient();
+        _interface->consoleAppendTextBarber("Coupé les cheveux à un client de plus...");
     }
 
     _interface->consoleAppendTextBarber("La journée est terminée, à demain !");
