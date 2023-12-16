@@ -51,11 +51,13 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         auto &chairToUse = chairs.at(freeChairIndex);
         freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
+        nbWaitingClients--;
     } else {
+        barberAwake = true;
         barberSleeping.notifyOne();
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
-        barberAwake = true;
-        animationWakeUpBarber();
+        //On n'incrémente pas nbWaitingClients car le client n'attends pas, 2 autres clients peuvent rentrer
+        nbWaitingClients--;
         _interface->consoleAppendTextClient(clientId, QString("Je vais directement sur la working chair"));
     }
 
@@ -92,7 +94,6 @@ void PcoSalon::walkAround(unsigned clientId) {
 void PcoSalon::goHome(unsigned clientId) {
     // TODO
     _mutex.lock();
-    nbClients--;
     animationClientGoHome(clientId);
     _mutex.unlock();
 }
@@ -108,8 +109,9 @@ void PcoSalon::goToSleep() {
     barberAwake = false;
     animationBarberGoToSleep();
     barberSleeping.wait(&_mutex);
+    animationWakeUpBarber();
     //Le barbier est réveillé par le premier client qui entre
-    //et qui voit qu'il dort.
+    //et qui voit qu'il dort. barberAwake est déjà true.
     _mutex.unlock();
 }
 
