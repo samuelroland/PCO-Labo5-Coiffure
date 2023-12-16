@@ -167,7 +167,16 @@ protected:
 
     PcoMutex _mutex;
 
-    // TODO
+    //Gestion des chaises
+    const unsigned capacity;
+    std::vector<std::unique_ptr<PcoConditionVariable>> chairs;
+    unsigned freeChairIndex = 0;      //index de la prochaine chaise disponible pour un client arrivant
+    unsigned nextClientChairIndex = 0;//index de la chaise avec le prochain client à gérer
+    unsigned nbClients = 0;
+
+    bool barberAwake = true;
+    bool workChairFree = true;
+    PcoConditionVariable waitBarber;//les clients attendent que le barbier soit dispo
 };
 
 #endif// PCOSALON_H

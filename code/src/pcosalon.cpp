@@ -9,43 +9,73 @@
 
 #include "pcosalon.h"
 
+#include <pcosynchro/pcoconditionvariable.h>
 #include <pcosynchro/pcothread.h>
 
 #include <iostream>
 
 PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
-    : _interface(interface) {
-    // TODO
+    : _interface(interface), capacity(capacity) {
+
+	//Init chairs with pointers on PcoConditionVariable objects
+	chairs.reserve(capacity);
+    for (unsigned i = 0; i < capacity; i++) {
+        chairs.push_back(std::make_unique<PcoConditionVariable>());
+    }
 }
 
 /********************************************
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    // TODO
+    return nbClients;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
-    // TODO
+    _mutex.lock();
+    if (nbClients == capacity) return false;
+    animationClientAccessEntrance(clientId);
+
+    if (barberAwake) {
+        animationClientSitOnChair(clientId, freeChairIndex);
+        auto &chairToUse = chairs.at(freeChairIndex);
+        freeChairIndex = freeChairIndex + 1 % capacity;
+        chairToUse->wait(&_mutex);
+    } else {
+        animationWakeUpBarber();
+        barberAwake = true;
+    }
+
+    _mutex.unlock();
+    return true;
 }
 
 
 void PcoSalon::goForHairCut(unsigned clientId) {
-    // TODO
+    _mutex.lock();
+    animationClientSitOnWorkChair(clientId);
+    workChairFree = false;
+    _mutex.unlock();
 }
 
 void PcoSalon::waitingForHairToGrow(unsigned clientId) {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 
 void PcoSalon::walkAround(unsigned clientId) {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 
 void PcoSalon::goHome(unsigned clientId) {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 
@@ -54,21 +84,30 @@ void PcoSalon::goHome(unsigned clientId) {
  *******************************************/
 void PcoSalon::goToSleep() {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 
 void PcoSalon::pickNextClient() {
     // TODO
+    _mutex.lock();
+    // chairs.at(nextClientChairIndex).notifyOne();
+    _mutex.unlock();
 }
 
 
 void PcoSalon::waitClientAtChair() {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 
 void PcoSalon::beautifyClient() {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 /********************************************
@@ -76,11 +115,14 @@ void PcoSalon::beautifyClient() {
  *******************************************/
 bool PcoSalon::isInService() {
     // TODO
+    return true;
 }
 
 
 void PcoSalon::endService() {
     // TODO
+    _mutex.lock();
+    _mutex.unlock();
 }
 
 /********************************************
