@@ -30,26 +30,26 @@ PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    return nbClients;
+    return nbWaitingClients;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
     _mutex.lock();
     // _interface->consoleAppendTextClient(clientId, "Tentons d'entrer dans le salon...");
-    if (nbClients >= capacity) {
+    if (nbWaitingClients >= capacity) {
         _mutex.unlock();
         // _interface->consoleAppendTextClient(clientId, "Trop de monde...");
         return false;
     }
 
-    auto clientNumero = ++nbClients;
+    auto clientNumero = ++nbWaitingClients;
     animationClientAccessEntrance(clientId);
 
     if (barberAwake) {
         _interface->consoleAppendTextClient(clientId, QString("Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
         animationClientSitOnChair(clientId, freeChairIndex);
         auto &chairToUse = chairs.at(freeChairIndex);
-        freeChairIndex = freeChairIndex + 1 % capacity;
+        freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
     } else {
         barberSleeping.notifyOne();
@@ -121,7 +121,7 @@ void PcoSalon::pickNextClient() {
 
     //TODO: should we check workChairFree ?
     chairs.at(nextClientChairIndex)->notifyOne();
-    nextClientChairIndex = nextClientChairIndex + 1 % capacity;
+    nextClientChairIndex = (nextClientChairIndex + 1) % capacity;
     _mutex.unlock();
 }
 
