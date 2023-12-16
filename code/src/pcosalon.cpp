@@ -35,10 +35,10 @@ unsigned int PcoSalon::getNbClient() {
 
 bool PcoSalon::accessSalon(unsigned clientId) {
     _mutex.lock();
-    _interface->consoleAppendTextClient(clientId, "Tentons d'entrer dans le salon...");
+    // _interface->consoleAppendTextClient(clientId, "Tentons d'entrer dans le salon...");
     if (nbClients >= capacity) {
         _mutex.unlock();
-        _interface->consoleAppendTextClient(clientId, "Trop de monde...");
+        // _interface->consoleAppendTextClient(clientId, "Trop de monde...");
         return false;
     }
 
@@ -53,6 +53,10 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         chairToUse->wait(&_mutex);
     } else {
         barberSleeping.notifyOne();
+        //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
+        barberAwake = true;
+        animationWakeUpBarber();
+        _interface->consoleAppendTextClient(clientId, QString("Je vais directement sur la working chair"));
     }
 
     _mutex.unlock();
@@ -104,8 +108,8 @@ void PcoSalon::goToSleep() {
     barberAwake = false;
     animationBarberGoToSleep();
     barberSleeping.wait(&_mutex);
-    animationWakeUpBarber();
-    barberAwake = true;
+    //Le barbier est réveillé par le premier client qui entre
+    //et qui voit qu'il dort.
     _mutex.unlock();
 }
 
