@@ -26,9 +26,9 @@ void Barber::run() {
         } else {
             _salon->goToSleep();
 
-            //Si on est réveillé et qu'il n'y a pas de client à gérer en plus d'avoir le salon fermé
+            //Si on est réveillé et que le salon fermé et en plus qu'il n'y a pas de client à gérer
             //alors on peut s'arrêter tout de suite
-            if (_salon->getNbClient() == 0 && !_salon->isInService()) break;
+            if (!_salon->isInService() && _salon->getNbClient() == 0) break;
         }
         //A cette étape, il y a forcèment un ou des clients en attente
         _salon->waitClientAtChair();
