@@ -45,7 +45,6 @@ bool PcoSalon::accessSalon(unsigned clientId) {
     }
 
     auto clientNumero = ++nbWaitingClients;
-
     //Si le barbier est réveillé on s'assied en salle d'attente
     if (barberAwake) {
         _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
@@ -54,7 +53,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         auto &chairToUse = chairs.at(freeChairIndex);
         freeChairIndex = (freeChairIndex + 1) % capacity;
         chairToUse->wait(&_mutex);
-        // nbWaitingClients--;//la chaise est libre le client n'est plus en attente
+        nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
         //Sinon on réveille le barbier et on y va direct
         _interface->consoleAppendTextClient(clientId, QString("Barbier endormi: Je le réveille et vais directement sur la working chair"));
@@ -63,7 +62,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         barberAwake = true;
         barberSleeping.notifyOne();
         //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
-        // nbWaitingClients--;
+        nbWaitingClients--;
     }
 
     _mutex.unlock();
@@ -73,11 +72,12 @@ bool PcoSalon::accessSalon(unsigned clientId) {
 
 void PcoSalon::goForHairCut(unsigned clientId) {
     _mutex.lock();
+    barberReady.wait(&_mutex);
     animationClientSitOnWorkChair(clientId);
     _interface->consoleAppendTextClient(clientId, "Arrivé sur la working chair");
     workChairFree = false;
     barberWaiting.notifyOne();
-    nbWaitingClients--;
+    //nbWaitingClients--;
     clientCutWaiting.wait(&_mutex);
 
     workChairFree = true;
@@ -141,24 +141,25 @@ void PcoSalon::pickNextClient() {
     _interface->consoleAppendTextBarber("Prenons le client suivant");
 
     //TODO: should we check workChairFree ?
-    if (workChairFree) {
+    //if (workChairFree) {
         _interface->consoleAppendTextBarber(QString("Appeler le client en chaise %1").arg(nextClientChairIndex));
         chairs.at(nextClientChairIndex)->notifyOne();
         nextClientChairIndex = (nextClientChairIndex + 1) % capacity;
-    }
+    //}
     _mutex.unlock();
 }
 
 
 void PcoSalon::waitClientAtChair() {
     _mutex.lock();
+    barberReady.notifyOne();
     _interface->consoleAppendTextBarber("Attendons le client appelé");
     //TODO: besoin d'un while ou pas ? comme c'est un pattern régulier avec les moniteurs de Mesa.
     //Si le client n'est pas déjà arrivé sur la working char alors on l'attend
     //Il ne faut surtout pas l'attendre s'il est allé très vite et arrive avant le barbier sinon le barbier sera bloqué indéfiniment
-    if (workChairFree) {
+    //if (workChairFree) {
         barberWaiting.wait(&_mutex);
-    }
+    //}
     _mutex.unlock();
 }
 

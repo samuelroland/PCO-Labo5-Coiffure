@@ -177,6 +177,7 @@ protected:
 
     bool barberAwake = true;
     bool workChairFree = true;
+    PcoConditionVariable barberReady; // Le barbier avertit le client lorsqu'il est à la chaise, prêt à travailler. 
     PcoConditionVariable barberWaiting;   //le barbier en attente que le client arrive sur la working chair
     PcoConditionVariable barberSleeping;  //le barbier dort
     PcoConditionVariable clientCutWaiting;//le client sur la working chair attend de s'être fait coupé les cheveux
