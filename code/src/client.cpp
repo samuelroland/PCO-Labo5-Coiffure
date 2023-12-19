@@ -5,7 +5,8 @@
  * | |    | |___| |__| |  / /_| |_| / /_ ___) |
  * |_|     \_____\____/  |____|\___/____|____/
  */
-// Modifications à faire dans le fichier
+// Auteur·ices: Vitória Oliveira et Samuel Roland
+// Date: 19.12.2023
 
 #include "client.h"
 #include <unistd.h>
@@ -21,6 +22,7 @@ Client::Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInte
 }
 
 void Client::run() {
+    //Implémentation de la machine d'état fournie pour le client
     while (_salon->isInService()) {
         if (_salon->accessSalon(_clientId)) {
             _salon->goForHairCut(_clientId);
