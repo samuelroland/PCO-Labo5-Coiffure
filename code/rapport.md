@@ -30,7 +30,8 @@ En plus, nous avons les variables suivantes:
 
 ## Fin de service
 
-La méthode `endService()` met la variable `isOpen` à faux et notifie le barbier lorsque celui-ci dort afin que la fin de son thread puisse être gérée correctement.
+La méthode `endService()` met la variable `isOpen` à faux et notifie le barbier sur `barberSleeping` lorsque celui-ci dort afin que la fin de son thread puisse être gérée correctement. 
+
 
 ### Animations
 
