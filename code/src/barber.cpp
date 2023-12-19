@@ -5,7 +5,8 @@
  * | |    | |___| |__| |  / /_| |_| / /_ ___) |
  * |_|     \_____\____/  |____|\___/____|____/
  */
-// Modifications à faire dans le fichier
+// Auteur·ices: Vitória Oliveira et Samuel Roland
+// Date: 19.12.2023
 
 #include "barber.h"
 #include <unistd.h>

@@ -5,7 +5,8 @@
  * | |    | |___| |__| |  / /_| |_| / /_ ___) |
  * |_|     \_____\____/  |____|\___/____|____/
  */
-// Rien à modifier
+// Auteur·ices: Vitória Oliveira et Samuel Roland
+// Date: 19.12.2023
 
 #ifndef PCOSALON_H
 #define PCOSALON_H

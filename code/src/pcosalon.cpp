@@ -6,6 +6,8 @@
  * |_|     \_____\____/  |____|\___/____|____/
  */
 // Modifications à faire dans le fichier
+// Auteur·ices: Vitória Oliveira et Samuel Roland
+// Date: 19.12.2023
 
 #include "pcosalon.h"
 #include "utils/display.h"
