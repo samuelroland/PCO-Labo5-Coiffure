@@ -30,7 +30,7 @@ PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    return nbWaitingClients;
+    return nbUncutClients;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
@@ -44,7 +44,8 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         return false;
     }
 
-    auto clientNumero = ++nbWaitingClients;
+    auto clientNumero = ++nbUncutClients;
+    ++nbWaitingClients;
     //Si le barbier est réveillé on s'assied en salle d'attente
     if (barberAwake) {
         _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
@@ -54,7 +55,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         animationClientSitOnChair(clientId, localChairIndex);
 
         chairToUse->wait(&_mutex);
-        //nbWaitingClients--;//la chaise est libre le client n'est plus en attente
+        nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
         //Sinon on réveille le barbier et on y va direct
         _interface->consoleAppendTextClient(clientId, QString("Barbier endormi: Je le réveille et vais directement sur la working chair"));
@@ -64,7 +65,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         barberSleeping.notifyOne();
         barberReady.wait(&_mutex);
         //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
-        //nbWaitingClients--;
+        nbWaitingClients--;
     }
 
     _mutex.unlock();
@@ -78,8 +79,8 @@ void PcoSalon::goForHairCut(unsigned clientId) {
     _interface->consoleAppendTextClient(clientId, "Arrivé sur la working chair");
     workChairFree = false;
     barberWaiting.notifyOne();
-    nbWaitingClients--;
     clientCutWaiting.wait(&_mutex);
+    nbUncutClients--;
 
     workChairFree = true;
     _interface->consoleAppendTextClient(clientId, "La coupe est terminée");
@@ -125,7 +126,7 @@ void PcoSalon::goToSleep() {
     _interface->consoleAppendTextBarber("Je me réveille");
 
     //Animer le réveil du barbier seulement si le salon ne doit pas fermer
-    if (isInService() || nbUnmanagedClients > 0) {
+    if (isInService() || nbUncutClients > 0) {
         _interface->consoleAppendTextBarber("Je me déplace vers la chaise");
         animationWakeUpBarber();
 
