@@ -22,6 +22,7 @@ Client::Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInte
 }
 
 void Client::run() {
+    //Implémentation de la machine d'état fournie pour le client
     while (_salon->isInService()) {
         if (_salon->accessSalon(_clientId)) {
             _salon->goForHairCut(_clientId);

@@ -50,7 +50,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         return false;
     }
 
-    auto clientNumero = ++nbUncutClients;
+    ++nbUncutClients;
     ++nbWaitingClients;
     //Si le barbier est réveillé on s'assied en salle d'attente
     if (barberAwake) {
@@ -60,14 +60,17 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         freeChairIndex = (freeChairIndex + 1) % capacity;
         animationClientSitOnChair(clientId, localChairIndex);
 
-        _interface->consoleAppendTextClient(clientId, QString("pose sur la chaise"));
+        _interface->consoleAppendTextClient(clientId, QString("On se pose sur la chaise"));
 
-        chairsUsed.at(localChairIndex) = true;//le barbier peut ainsi savoir qu'on est arrivé sur cette chaise
-        clientSitWaiting.notifyOne();         //on notifie le barbier qu'un nouveau client s'est assis (qu'il puisse checker si c'est le prochain client)
-        chairToUse->wait(&_mutex);            //on attend que le barbier nous signale quand c'est notre tour
+        //Le barbier peut ainsi savoir qu'on est arrivé sur cette chaise
+        chairsUsed.at(localChairIndex) = true;
+        //On notifie le barbier qu'un nouveau client s'est assis (qu'il puisse checker si c'est le prochain client)
+        clientSitWaiting.notifyOne();
+        //On attend que le barbier nous signale quand c'est notre tour
+        chairToUse->wait(&_mutex);
 
         chairsUsed.at(localChairIndex) = false;//la chaise n'est plus occupée
-        _interface->consoleAppendTextClient(clientId, QString("leve de la chaise"));
+        _interface->consoleAppendTextClient(clientId, QString("On se lève de la chaise"));
         nbWaitingClients--;//la chaise est libre le client n'est plus en attente
     } else {
         //Sinon on réveille le barbier et on y va direct
@@ -76,8 +79,10 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
         barberAwake = true;
         barberSleeping.notifyOne();
-        //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
+        //On décrémente nbWaitingClients car le client n'attend plus, dès qu'il se laisse un autre client doit pouvoir rentrer
         nbWaitingClients--;
+
+        //On attend que le barbier arrive devant sa chaise pour éviter d'arriver avant lui si on va plus vite que lui
         barberReady.wait(&_mutex);
     }
 
@@ -90,11 +95,9 @@ void PcoSalon::goForHairCut(unsigned clientId) {
     _mutex.lock();
     animationClientSitOnWorkChair(clientId);
     _interface->consoleAppendTextClient(clientId, "Arrivé sur la working chair");
-    workChairFree = false;
     barberWaiting.notifyOne();
     clientCutWaiting.wait(&_mutex);
 
-    workChairFree = true;
     _interface->consoleAppendTextClient(clientId, "La coupe est terminée");
     //Quitter le salon
     _mutex.unlock();
@@ -150,11 +153,7 @@ void PcoSalon::goToSleep() {
 void PcoSalon::pickNextClient() {
     _mutex.lock();
     _interface->consoleAppendTextBarber("Prenons le client suivant");
-    //TODO: vraiment utile ?
-    // if (nbWaitingClients == 0) {
-    //     _mutex.unlock();
-    //     return;
-    // }
+
     _interface->consoleAppendTextBarber(QString("Appeler le client en chaise %1 ").arg(nextClientChairIndex));
 
     //Tant que le chaise du prochain client n'est pas occupée, on attend que le client s'assoit dessus
@@ -174,9 +173,11 @@ void PcoSalon::pickNextClient() {
 void PcoSalon::waitClientAtChair() {
     _mutex.lock();
     barberReady.notifyOne();
-    _interface->consoleAppendTextBarber("Attendons le client appelé");
+
     //On attend que le client arrive à la chaise de travail
     //on est sûr qu'il n'arrivera pas avant nous car il ne peut venir que si on est devant la chaise
+    //donc pas risque de faire un notify
+    _interface->consoleAppendTextBarber("Attendons le client appelé");
     barberWaiting.wait(&_mutex);
     _mutex.unlock();
 }
@@ -187,7 +188,7 @@ void PcoSalon::beautifyClient() {
     _interface->consoleAppendTextBarber("Faisons lui une belle coupe.");
     animationBarberCuttingHair();
     nbUncutClients--;
-    clientCutWaiting.notifyOne();//notifier le client sur la working chair qu'on a terminé la coupe
+    clientCutWaiting.notifyOne();//notifier le client que la coupe est terminé
     _interface->consoleAppendTextBarber("Coupe terminée");
     _mutex.unlock();
 }

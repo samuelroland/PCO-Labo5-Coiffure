@@ -19,8 +19,8 @@ Barber::Barber(GraphicSalonInterface *interface, std::shared_ptr<SalonBarberInte
 }
 
 void Barber::run() {
-    //TODO: problème getNbClient retourne le nombre de client en attente et non le total à gérer.
-    //comment savoir s'il en reste ???
+    //Implémentation de la machine d'état fournie pour le client
+    //Avec customisation pour permettre pour gérer la fermeture du salon
     while (_salon->isInService() || _salon->getNbClient() > 0) {
         if (_salon->getNbClient() > 0) {
             _salon->pickNextClient();
@@ -36,6 +36,6 @@ void Barber::run() {
         _salon->beautifyClient();
         _interface->consoleAppendTextBarber("Coupé les cheveux à un client de plus...");
     }
-    // _salon->goToSleep();	//TODO:est-ce qu'on veut animer le barbier comme s'il allait s'endormir avant de terminer son thread ?? (sans faire de wait attention)
+
     _interface->consoleAppendTextBarber("La journée est terminée, à demain !");
 }
