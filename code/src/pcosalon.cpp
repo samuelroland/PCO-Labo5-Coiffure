@@ -52,7 +52,7 @@ bool PcoSalon::accessSalon(unsigned clientId) {
     ++nbWaitingClients;
     //Si le barbier est réveillé on s'assied en salle d'attente
     if (barberAwake) {
-        _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientNumero));
+        _interface->consoleAppendTextClient(clientId, QString("Barbier réveillé: Je me pose sur la chaise %1, je suis client n %2").arg(freeChairIndex).arg(clientId));
         auto &chairToUse = chairs.at(freeChairIndex);
         auto localChairIndex = freeChairIndex;
         freeChairIndex = (freeChairIndex + 1) % capacity;
@@ -201,7 +201,7 @@ bool PcoSalon::isInService() {
 void PcoSalon::endService() {
     _mutex.lock();
     isOpen = false;
-    _interface->consoleAppendTextBarber("Le salon est fermé, c'est la fin de service.");
+    _interface->consoleAppendTextBarber("Le salon doit fermer, c'est la fin de service.");
     //Si le barbier dort, il faut le réveiller pour que son thread puisse se terminer
     if (!barberAwake) {
         barberSleeping.notifyOne();
