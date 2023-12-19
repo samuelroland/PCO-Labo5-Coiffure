@@ -21,17 +21,19 @@ Chaque client nécessitant d'attendre dans le salon effectue un wait sur la proc
 
 
 En plus, nous avons les variables suivantes:
-- bool `barberAwake` : indique si le barbier est réveillé.
-- bool `isOpen` : indique si le salon est en service. 
-- unsigned `nbWaitingClients` : qui compte le nombre de client en salle d'attente. 
-- `_mutex` : ce mutex fourni est utilisé dans toutes les méthodes (lock au début et unlock à la fin) afin de garantir qu'il n'y a qu'un seul thread à la fois dans le moniteur de Mesa. La seule méthode où nous n'avions pas besoin de l'utiliser est l'accesseur `getNbClient()` qui retourne juste `nbWaitingClients`. Cette méthode étant utilisée uniquement par le barbier et comparée à 0, il n'y a pas de cas qui pourrait des problèmes. Les cas limites seraient qu'un client vient d'arriver et que le
+- `bool barberAwake` : indique si le barbier est réveillé.
+- `bool isOpen` : indique si le salon est en service. 
+- `std::vector<bool> chairsUsed` : vecteur de boolean qui stocke l'état d'occupation des chaises en salle d'attente. 
+- `unsigned nbWaitingClients` : compte le nombre de client en salle d'attente. 
+- `unsigned nbUncutClients` : compte le nombre de clients dont la coupe n'a pas encore été faite.
+- `_mutex` : ce mutex fourni est utilisé dans toutes les méthodes (lock au début et unlock à la fin) afin de garantir qu'il n'y a qu'un seul thread à la fois dans le moniteur de Mesa. 
 
 ## Fin de service
-__TODO__
-<!-- Le barbier peut aussi être notifié lorsque nous souhaitons finir le programme en appelant la méthode `endService()` afin que la fin de son thread puisse être gérée correctement.  -->
+
+La méthode `endService()` met la variable `isOpen` à faux et notifie le barbier lorsque celui-ci dort afin que la fin de son thread puisse être gérée correctement.
 
 ### Animations
--__TODO__ Dire quando nous faisons les animations?
+
 
 ## Tests effectués
 
@@ -40,6 +42,7 @@ __TODO__
 | Vérification | Status |
 |---|---|
 | Premier client réveille le barbier | **OK** |
+| Client qui réveille  le barbier attend que celui-ci arrive à la chaise de travail | **OK** |
 | Client va sur les chaises de la salle d'attente si la chaise du barbier est occupée | **OK** |
 | Nombre de clients en attente ne dépasse pas la capacité des chaises disponible | **OK** |
 | Clients traités dans l'ordre| **OK** |
@@ -52,19 +55,12 @@ __TODO__
 
 | Nombre de clients | Nombre de chaises | Status | 
 | --- | --- | --- |
-| 10 | 0 | **OK** |
+| 0 | 2 | **OK** | 
 | 10 | 1 | **OK** |
 | 20 | 20 | **OK** | 
 | 30 | 2 | **OK** |
-| 1 | 0 | **OK** | 
 
 Lorsqu'il n'y a pas de chaises en salle d'attente, aucun client n'entre dans le salon et le barbier va se coucher. 
-
-### Tests de bon fonctionnement spécifiques
-
-| Test | Status | 
-| --- | --- |
-| Test client plus rapide que barbier: teste lorsque le client arrive sur la chaise de travail avant le barbier | |
 
 ### Test de terminaison 
 
@@ -77,12 +73,9 @@ Lorsqu'il n'y a pas de chaises en salle d'attente, aucun client n'entre dans le 
 ### Tests de terminaison spécifiques
 
 | Test | Comportement | Status | 
-| --- | --- |
+| --- | --- | --- |
 | Terminaison lorsque le barbier dort | Le barbier se réveille brièvement pour que son thread puissent se terminer. Les clients en attente dehors du salon partent progressivement. Les threads sont terminées correctement. | **OK** |
-| Terminaison lorsque pas de clients dans le salon | |
-| Terminaison lorsque barbier est entre deux clients  | |
-| Terminaison lorsque le 1er client vient d'arriver et le barbier n'est pas encore sur la chaise de travail | |
+| Terminaison lorsque pas de clients dans le salon | Le barbier va dormir. Il se réveille brièvement pour que son thread puissent se terminer. Les clients en attente dehors du salon partent progressivement. Les threads sont terminées correctement.| **OK** |
+| Terminaison lorsque le dernier client est sur la chaise de travail et pas de clients en attente | Le barbier traite le dernier client puis il ferme le salon. Les threads sont terminées correctement. | **OK** |
+| Terminaison lorsque barbier est entre deux clients  | Le barbier traite le dernier client puis il ferme le salon. Les threads sont terminées correctement. | **OK** |
 
-## Conclusion
-
-__TODO__ Citer problèmes
