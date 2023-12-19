@@ -30,7 +30,10 @@ PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
  * Méthodes de l'interface pour les clients *
  *******************************************/
 unsigned int PcoSalon::getNbClient() {
-    return nbUncutClients;
+    _mutex.lock();
+    auto local = nbUncutClients;
+    _mutex.unlock();
+    return local;
 }
 
 bool PcoSalon::accessSalon(unsigned clientId) {
@@ -63,9 +66,9 @@ bool PcoSalon::accessSalon(unsigned clientId) {
         //On réveille le barbier ici, parce que le prochain client ne doit pas faire de même et passer tout droit sans attendre
         barberAwake = true;
         barberSleeping.notifyOne();
-        barberReady.wait(&_mutex);
         //On décrémente nbWaitingClients car le client n'attend pas, 2 autres clients peuvent rentrer
         nbWaitingClients--;
+        barberReady.wait(&_mutex);
     }
 
     _mutex.unlock();
@@ -80,7 +83,6 @@ void PcoSalon::goForHairCut(unsigned clientId) {
     workChairFree = false;
     barberWaiting.notifyOne();
     clientCutWaiting.wait(&_mutex);
-    nbUncutClients--;
 
     workChairFree = true;
     _interface->consoleAppendTextClient(clientId, "La coupe est terminée");
@@ -103,7 +105,6 @@ void PcoSalon::walkAround(unsigned clientId) {
 
 
 void PcoSalon::goHome(unsigned clientId) {
-    // TODO
     _mutex.lock();
     _interface->consoleAppendTextClient(clientId, QString("Je vais à la maison"));
     animationClientGoHome(clientId);
@@ -116,7 +117,6 @@ void PcoSalon::goHome(unsigned clientId) {
  * Méthodes de l'interface pour le barbier  *
  *******************************************/
 void PcoSalon::goToSleep() {
-    // TODO
     _mutex.lock();
     _interface->consoleAppendTextBarber("Je vais au lit");
     barberAwake = false;
@@ -167,10 +167,10 @@ void PcoSalon::waitClientAtChair() {
 
 
 void PcoSalon::beautifyClient() {
-    // TODO
     _mutex.lock();
     _interface->consoleAppendTextBarber("Faisons lui une belle coupe.");
     animationBarberCuttingHair();
+    nbUncutClients--;
     clientCutWaiting.notifyOne();//notifier le client sur la working chair qu'on a terminé la coupe
     _interface->consoleAppendTextBarber("Coupe terminée");
     _mutex.unlock();
@@ -185,7 +185,6 @@ bool PcoSalon::isInService() {
 
 
 void PcoSalon::endService() {
-    // TODO
     _mutex.lock();
     isOpen = false;
     _interface->consoleAppendTextBarber("Le salon est fermé, c'est la fin de service.");
