@@ -16,9 +16,6 @@
 #include <pcosynchro/pcomutex.h>
 #include <pcosynchro/pcothread.h>
 
-#include <iostream>
-#include <string>
-
 PcoSalon::PcoSalon(GraphicSalonInterface *interface, unsigned int capacity)
     : _interface(interface), capacity(capacity) {
     //Initialiser les chaises en tant que liste de PcoConditionVariable, chacune servant à faire attendre ou libérer une client

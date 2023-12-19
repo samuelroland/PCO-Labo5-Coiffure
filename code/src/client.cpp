@@ -11,8 +11,6 @@
 #include "client.h"
 #include <unistd.h>
 
-#include <iostream>
-
 int Client::_nextId = 0;
 
 Client::Client(GraphicSalonInterface *interface, std::shared_ptr<SalonClientInterface> salon)
