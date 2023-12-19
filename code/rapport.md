@@ -68,15 +68,55 @@ __TODO__ Faire diagramme car ca facilite la compréhension?
 
 __TODO__ reformuler + ajouter des tests
 
-- Simulation d'un Salon Plein : Vérification de la capacité du salon à gérer un nombre maximal de clients, en s'assurant qu'ils entrent, attendent, se font coiffer, et quittent correctement. **OK**. 
+### Test de bon fonctionnement général
 
-- Test de la Synchronisation Client-Barbier : Validation de la synchronisation entre les clients et le barbier, en s'assurant que le barbier ne coiffe que les clients présents sur la chaise de travail.**OK**.
+| Vérification | Status |
+|---|---|
+| Premier client réveille le barbier | **OK** |
+| Client va sur les chaises de la salle d'attente si la chaise du barbier est occupée | **OK** |
+| Nombre de clients en attente ne dépasse pas la capacité des chaises disponible | **OK** |
+| Clients traités dans l'ordre| **OK** |
+| Pas de chevauchement entre les clients| **OK** |
+| Client attend chaise libre pour aller sur la chaise du barbier | **OK** |
+| Barbier attend que le client soit sur la chaise pour couper les cheveux | **OK** |
+| Client attend la fin de la coupe pour partir | **OK** |
 
-- Test de la Salle d'Attente : Vérification du bon fonctionnement de la salle d'attente, en s'assurant que le nombre de clients en attente ne dépasse pas la capacité des chaises disponibles.**OK**.
+### Tests de bon fonctionnement selon nombre de clients et nombre de chaises dans la salle d'attente
 
-- Scénario de Fermeture du Salon : Test de la gestion de la fermeture du salon, en vérifiant que les clients déjà présents dans le salon sont correctement pris en charge avant la fermeture.**OK**.
-    - Test lorsque le barbier dort. 
-    - Test à d'autres moments. 
+| Nombre de clients | Nombre de chaises | Status | 
+| --- | --- | --- |
+| 10 | 0 | **OK** |
+| 10 | 1 | **OK** |
+| 20 | 20 | **OK** | 
+| 30 | 2 | **OK** |
+| 1 | 0 | **OK** | 
+
+Lorsqu'il n'y a pas de chaises en salle d'attente, aucun client n'entre dans le salon et le barbier va se coucher. 
+
+
+### Tests de bon fonctionnement spécifiques
+
+| Test | Status | 
+| --- | --- |
+| Test client plus rapide que barbier: teste lorsque le client arrive sur la chaise de travail avant le barbier | |
+
+### Test de terminaison 
+
+| Vérification | Status |
+|---|---|
+| Clients dans le salon sont pris en charge avant la terminaison | **OK** |
+| Toutes les threads se terminent | **OK** |
+| Thread du barbier est la dernière terminer | **OK** |
+
+### Tests de terminaison spécifiques
+
+| Test | Comportement | Status | 
+| --- | --- |
+| Terminaison lorsque le barbier dort | Le barbier se réveille brièvement pour que son thread puissent se terminer. Les clients en attente dehors du salon partent progressivement. Les threads sont terminées correctement. | **OK** |
+| Terminaison lorsque pas de clients dans le salon | |
+| Terminaison lorsque barbier est entre deux clients  | |
+| Terminaison lorsque le 1er client vient d'arriver et le barbier n'est pas encore sur la chaise de travail | |
+
 
 - Test client plus rapide que barbier: teste lorsque le client arrive sur la chaise de travail avant le barbier. **NOT OK**.
 
@@ -85,7 +125,6 @@ __TODO__ reformuler + ajouter des tests
 - Test différent nombre de clients. (5 à 8) 
 
 - Test cas spécial: 1 chaise et 30 personnes.
-
 
 
 ## Conclusion
