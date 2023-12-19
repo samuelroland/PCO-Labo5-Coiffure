@@ -60,7 +60,6 @@ __TODO__
 
 Lorsqu'il n'y a pas de chaises en salle d'attente, aucun client n'entre dans le salon et le barbier va se coucher. 
 
-
 ### Tests de bon fonctionnement spécifiques
 
 | Test | Status | 
@@ -84,27 +83,6 @@ Lorsqu'il n'y a pas de chaises en salle d'attente, aucun client n'entre dans le 
 | Terminaison lorsque barbier est entre deux clients  | |
 | Terminaison lorsque le 1er client vient d'arriver et le barbier n'est pas encore sur la chaise de travail | |
 
-
-- Test client plus rapide que barbier: teste lorsque le client arrive sur la chaise de travail avant le barbier. **NOT OK**.
-
-- Test différent nombre de chaises dans salle d'attente. 
-
-- Test différent nombre de clients. (5 à 8) 
-
-- Test cas spécial: 1 chaise et 30 personnes.
-
-
 ## Conclusion
 
 __TODO__ Citer problèmes
-
-
-
-
-# LISTE DE QUESTIONS 
-- Expliquer fonctionnement des clients? Barbier? Salon? Ou c'est trop car c'est un peu comme expliquer la machine d'états/dans la consigne du labo? Est-ce qu'on fait aussi un diagramme car ca facilite la compréhension?
-- Expliquer run client/barbier?
-- Citer les cas où le barbier va dormir?
-- Enlever partie // A enlever   ??
-- Expliquer gestion des animations?
-- Ajouter diagramme?
